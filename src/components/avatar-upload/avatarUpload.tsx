@@ -1,29 +1,35 @@
-import { useRef, useState, type ChangeEvent, type FC } from "react";
+import { useEffect, useRef, useState, type ChangeEvent, type FC } from "react";
 import styles from "./avatarUpload.module.scss";
 
 const AvatarUpload: FC = () => {
-  const [avatarImage, setAvatarImage] = useState<File | null>(null);
+  const maxPhotoSize: number = 1 * 1024 * 1024;
   const [prevAvatar, setPrevAvatar] = useState<string>("");
   const fileRef = useRef<HTMLInputElement>(null);
   const handleChange = (e: ChangeEvent<HTMLInputElement>): void => {
     const photo = e.target.files?.[0];
-    if (photo) {
-
-      if (photo.size > 1 * 1024 * 1024){
-        alert('Размер фото не может превышать 1МБ')
-        return
-      }
-
-      if (!photo.type.startsWith('image/')){
-        alert('Выбранный файл не является изображением')
-        return
-      }
 
 
-      setAvatarImage(photo);
-      const avatar = URL.createObjectURL(photo);
-      setPrevAvatar(avatar);
+    if (!photo) {
+      alert("Не удалось загрузить изображение");
+      return;
     }
+
+    if (photo.size > maxPhotoSize) {
+      alert("Размер фото не может превышать 1МБ");
+      return;
+    }
+
+    if (!photo.type.startsWith("image/")) {
+      alert("Выбранный файл не является изображением");
+      return;
+    }
+
+    if (prevAvatar) {
+      URL.revokeObjectURL(prevAvatar);
+    }
+    
+    const avatar = URL.createObjectURL(photo);
+    setPrevAvatar(avatar);
   };
 
   return (
@@ -41,12 +47,16 @@ const AvatarUpload: FC = () => {
             />
             {prevAvatar ? (
               <img
-              src={prevAvatar}
-              alt="avatarpreview"
-              className={styles.avatarImage} 
+                src={prevAvatar}
+                alt="avatarpreview"
+                className={styles.avatarImage}
               />
             ) : (
-              <img className={styles.avatarStart} src="ava.png" alt="avatarStart"/>
+              <img
+                className={styles.avatarStart}
+                src="ava.png"
+                alt="avatarStart"
+              />
             )}
           </div>
           <label htmlFor="ava-image">
